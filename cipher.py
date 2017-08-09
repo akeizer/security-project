@@ -67,11 +67,9 @@ def main():
         try:
             size = os.stat(args[0]).st_size
 
-            number_of_blocks = size / 1024 + 1
-
             # create the key
             print "Creating the key"
-            call(["dd", "if=/dev/random", "of=key.pad", "bs=1024", "count="+str(number_of_blocks)])
+            with open("key.pad", "w") as f: f.write(os.urandom((size/1024+1)*1024))
 
             # encrypt
             print "Encrypting the file"
