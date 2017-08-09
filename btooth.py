@@ -12,5 +12,24 @@ for addr, name in nearby_devices:
 dev_num = int(input("Select which device: "))
 
 device = nearby_devices[dev_num]
-service = bluetooth.find_service(address=device[0])
+services = bluetooth.find_service(address=device[0])
+
+
+sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
+service = None
+for s in services:
+    if s['service-classes'][0] == "B10E7007-CCD4-BBD7-1AAA-5EC000000017":
+        service = s
+
+if service:
+    sock.connect((device[0], service['port']))
+else:
+    pprint(services)
+    exit()
+
+sock.send("".join(map(chr,[8])))
+sock.send("TESTING!")
+
+sock.close()
+
 pprint(service)
