@@ -28,7 +28,9 @@ else:
     exit()
 
 sock.send("".join(map(chr,[8])))
-sock.send("TESTING!")
+sock.send("temp.txt")
+sock.send("".join(map(chr,[9])))
+sock.send("TESTING!_")
 
 sock.close()
 
