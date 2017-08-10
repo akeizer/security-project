@@ -76,7 +76,6 @@ def main():
     dev_num = int(input("Select which device: "))
 
     device = nearby_devices[dev_num]
-    services = bluetooth.find_service(address=device[0])
 
     sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
     service = None
@@ -96,14 +95,23 @@ def main():
             # remove file
             os.remove(args[0])
 
-            for s in services:
-                if s['service-classes'][0] == "B10E7007-CCD4-BBD7-1AAA-5EC000000017":
-                    service = s
+            services = bluetooth.find_service(uuid="B10E7007-CCD4-BBD7-1AAA-5EC000000017", address=device[0])
+            pprint.pprint(services)
+            if len(services) > 1:
+                print "Multiple Bluetooth recievers found - select the number shown on your device"
+                for s in services:
+                    print s['port']
+                port_num = int(input("Input number shown on device"))
+                for s in services:
+                    if s['port'] == port_num:
+                        service = s
+            elif len(services) == 1:
+                service = services[0]
 
             if service:
                 sock.connect((device[0], service['port']))
             else:
-                pprint(services)
+                pprint.pprint(services)
                 exit()
 
             short_file_name = os.path.basename(args[0])
@@ -121,14 +129,22 @@ def main():
             sys.exit(1)
     elif decrypting:
         try:
-            for s in services:
-                if s['service-classes'][0] == "B10E7007-CCD4-BBD7-1AAA-5EC0000000FF":
-                    service = s
+            services = bluetooth.find_service(uuid="B10E7007-CCD4-BBD7-1AAA-5EC0000000FF", address=device[0])
+            if len(services) > 1:
+                print "Multiple Bluetooth recievers found - select the number shown on your device"
+                for s in services:
+                    print s['port']
+                port_num = int(input("Input number shown on device"))
+                for s in services:
+                    if s['port'] == port_num:
+                        service = s
+            elif len(services) == 1:
+                service = services[0]
 
             if service:
                 sock.connect((device[0], service['port']))
             else:
-                pprint(services)
+                pprint.pprint(services)
                 exit()
 
             size = struct.unpack(">L", sock.recv(4))[0]
