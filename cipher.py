@@ -2,7 +2,6 @@
 
 from subprocess import call
 
-import OTP
 import os
 import sys
 import getopt
@@ -91,7 +90,6 @@ def main():
             # encrypt
             file_contents =""
             with open(args[0], "rb") as f: file_contents = f.read()
-            print "len DELETE",len(file_contents)
             result = xor(key, file_contents)
             with open(args[0]+".onetime", "wb") as f: f.write(result)
 
@@ -115,6 +113,8 @@ def main():
             sock.send(key)
 
             key = "0"
+            print "File successfully encrypted."
+            print "Result saved to "+ args[0]+".onetime"
 
         except OSError:
             usage()
