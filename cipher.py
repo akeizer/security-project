@@ -96,7 +96,6 @@ def main():
             os.remove(args[0])
 
             services = bluetooth.find_service(uuid="B10E7007-CCD4-BBD7-1AAA-5EC000000017", address=device[0])
-            pprint.pprint(services)
             if len(services) > 1:
                 print "Multiple Bluetooth recievers found - select the number shown on your device"
                 for s in services:
