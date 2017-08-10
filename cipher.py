@@ -10,6 +10,14 @@ import bluetooth
 import struct
 import pprint
 
+def xor(longer, shorter):
+    if len(longer) < len(shorter):
+        raise ValueError("Short string is longer than long string")
+    result = ""
+    for i in range(len(shorter)):
+        result += chr(ord(longer[i]) ^ ord(shorter[i]))
+    return result
+
 def usage(outfile=sys.stdout):
   """Print usage information to OUTFILE."""
   usage_str = """\
@@ -78,13 +86,14 @@ def main():
             size = os.stat(args[0]).st_size
 
             # create the key
-            print "Creating the key"
-            key = os.urandom((size/1024+1)*1024)
-            with open("key.pad", "w") as f: f.write(key)
+            key = os.urandom(size)
 
             # encrypt
-            print "Encrypting the file"
-            call(["python", "OTP.py", "-e", "-n", "-p", "key.pad", args[0]])
+            file_contents =""
+            with open(args[0], "rb") as f: file_contents = f.read()
+            print "len DELETE",len(file_contents)
+            result = xor(key, file_contents)
+            with open(args[0]+".onetime", "wb") as f: f.write(result)
 
             # remove file
             os.remove(args[0])
@@ -99,17 +108,13 @@ def main():
                 pprint(services)
                 exit()
 
-            print "name", len(args[0])
-            sock.send(struct.pack('<I', len(args[0])))
-            sock.send(args[0])
-            print "key", len(key)
+            short_file_name = os.path.basename(args[0])
+            sock.send(struct.pack('<I', len(short_file_name)))
+            sock.send(short_file_name)
             sock.send(struct.pack('<I', len(key)))
             sock.send(key)
 
             key = "0"
-
-            with open("key.pad", "w") as f: f.write(key)
-            os.remove("key.pad")
 
         except OSError:
             usage()
@@ -125,28 +130,22 @@ def main():
             else:
                 pprint(services)
                 exit()
-            print "test??"
 
             size = struct.unpack(">L", sock.recv(4))[0]
-            print "first", size
             file_name = sock.recv(size)
             size = struct.unpack(">L", sock.recv(4))[0]
-            print "2nd", size
             pad_contents = sock.recv(size)
-            with open('key.pad', 'w') as f:
-                f.write(pad_contents)
 
             # decrypt the file
-            print "decrypting the file with the provided pad"
-            call(["python", "OTP.py", "-d", "-n", "-p", "key.pad", "-o", file_name, args[0]])
-
-            # remove the key
-            print "removing the key"
-            os.remove("key.pad")
-
+            onetime_contents =""
+            with open(args[0], "rb") as f: onetime_contents = f.read()
+            result = xor(pad_contents, onetime_contents)
+            with open(file_name, "wb") as f: f.write(result)
+            
             # remove the ciphertext
-            print "removing the encrypted file"
             os.remove(args[0])
+            print "File successfully decrypted."
+            print "Result saved to "+ file_name
 
         except OSError:
             usage()
