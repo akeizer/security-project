@@ -101,7 +101,7 @@ def main():
                 print "Multiple Bluetooth recievers found - select the number shown on your device"
                 for s in services:
                     print s['port']
-                port_num = int(input("Input number shown on device"))
+                port_num = int(input("Input number shown on device: "))
                 for s in services:
                     if s['port'] == port_num:
                         service = s
@@ -134,7 +134,7 @@ def main():
                 print "Multiple Bluetooth recievers found - select the number shown on your device"
                 for s in services:
                     print s['port']
-                port_num = int(input("Input number shown on device"))
+                port_num = int(input("Input number shown on device: "))
                 for s in services:
                     if s['port'] == port_num:
                         service = s
